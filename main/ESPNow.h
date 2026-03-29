@@ -59,5 +59,4 @@ int espnow_send(const uint8_t *dest_mac, uint8_t* data, size_t length);
  */
 void espnow_Ritual(void* params);
 
-
 #endif // ESPNow_H

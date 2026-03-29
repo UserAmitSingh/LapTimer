@@ -12,7 +12,7 @@
     "board/esp32-builtin.cfg"
   ],
   "idf.customExtraVars": {
-    "IDF_TARGET": "esp32"
+    "IDF_TARGET": "esp32s3"
   },
   "idf.portWin": "COM6",
   "clangd.path": "C:\\Users\\js476\\.espressif\\tools\\esp-clang\\esp-19.1.2_20250312\\esp-clang\\bin\\clangd.exe",
@@ -20,5 +20,6 @@
     "--background-index",
     "--query-driver=C:\\Users\\js476\\.espressif\\tools\\xtensa-esp-elf\\esp-14.2.0_20241119\\xtensa-esp-elf\\bin\\xtensa-esp32s3-elf-gcc.exe",
     "--compile-commands-dir=c:\\MizzouRacing\\BMS\\build"
-  ]
+  ],
+  "idf.currentSetup": "C:\\Users\\js476\\esp\\v5.5.1\\esp-idf"
 }

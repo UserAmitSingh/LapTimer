@@ -21,37 +21,37 @@
 #include "esp_timer.h"
 #include "esp_sntp.h"
 
-typedef struct
-{
-    uint16_t minutes;
-    uint8_t seconds;
+typedef struct timeval lt_timeval;
+
+typedef struct {
     uint64_t microSeconds;
+    uint16_t minutes;
     uint16_t lap;
+    uint8_t seconds;
 } timer;
 
-typedef struct timeval timeval;
-
-typedef struct
-{
+typedef struct {
     timer laptimer;
-    struct timeval lastTime;
+    lt_timeval lastTime;
     int pin;
 } params;
 
-extern params globalParams;
+esp_err_t gpio_set_up (params*);
 
 void start_timer ();
+
 void lap_triggered (void* par);
 
 void espnow_seg();
 
-esp_err_t gpio_set_up (params*);
+
 
 void IRAM_ATTR gpioHandler(void* );
 
 void lap_processing_task (void *pvParameter);
+
 void laser_processing_task (void *pvParameter);
 
-esp_err_t compose_LoRa_msg(uint8_t * data, uint16_t * len); //Car_num isn't even used?
+esp_err_t compose_LoRa_msg(uint8_t * data, uint16_t * len); 
 
 #endif //LAP_TIME_H

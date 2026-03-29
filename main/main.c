@@ -24,19 +24,17 @@ void app_main(void)
 {
     // SPI is initialized in SPI module if needed
     // Pins are defined as macros above (NSS, MOSI, SPI_CLK, MISO)
-
     espnow_init();
-    
     start_timer();
 
-    timeval lastTime;
+    lt_timeval lastTime;
     gettimeofday(&lastTime, NULL);
     globalParams.lastTime = lastTime;
     globalParams.pin = GPIO_PIN;
 
     xTaskCreate(laser_processing_task, "Laser Processing Task", 4096, NULL, 5, NULL);
 
-    #if MAIN_TIMER
+    #if (MAIN_TIMER == 1)
 
     gpio_set_up(&globalParams);
     
@@ -45,6 +43,9 @@ void app_main(void)
     Main_Timer_Setup();
 
     xTaskCreatePinnedToCore(espnow_Ritual, "ESP Now Ritual Task", 8192, NULL, 2, NULL, 0);
+
+    // #elif (MAIN_TIMER == 2) 
+    // Paddock_Timer_Setup();
 
     #else
     gpio_set_up(&globalParams);

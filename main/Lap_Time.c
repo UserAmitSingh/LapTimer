@@ -5,8 +5,8 @@ static SemaphoreHandle_t laser_signal;
 StaticSemaphore_t laser_signal_buffer;
 timer laptimer;
 
-timeval current_time;
-timeval last_time;
+lt_timeval current_time;
+lt_timeval last_time;
 
 static volatile bool laser_tripped = false;
 static volatile uint32_t last_interrupt_tick = 0;
@@ -37,6 +37,8 @@ void lap_triggered(void *param)
     if (totalMicroseconds < 2000000) { //Check if lap is valid
         last_time.tv_sec = current_time.tv_sec;
         last_time.tv_usec = current_time.tv_usec;
+        ESP_LOGW ("Lap too short, ignoring", "Lap: %d, Time: %d:%02d.%06llu",
+                (laptimer.lap), (totalMicroseconds / 60000000), ((totalMicroseconds % 60000000) / 1000000), (totalMicroseconds % 1000000));
         return;
     }
 
@@ -54,7 +56,7 @@ void lap_triggered(void *param)
     last_time.tv_sec = current_time.tv_sec;
     last_time.tv_usec = current_time.tv_usec;
 
-    ESP_LOGI ("Updated lap time", "Lap: %d, Time: %d:%02d.%06llu",
+    ESP_LOGW ("Updated lap time", "Lap: %d, Time: %d:%02d.%06llu",
     (laptimer.lap), (minutes), (seconds), (uint64_t) laptimer.microSeconds);
 }
 
@@ -85,11 +87,11 @@ void lap_processing_task(void *pvParameter)
    lap_triggered(pvParameter);
 
    while (true) {
-    vTaskDelay(pdMS_TO_TICKS(25));
+        vTaskDelay(pdMS_TO_TICKS(25));
     
         int current_tick = xTaskGetTickCount();
         // DEBUG: printf("Last Tick: %ld, Current Tick: %d, pdMS_TO_TICKS: %ld\n", last_interrupt_tick, current_tick, pdMS_TO_TICKS(100));
-        if (current_tick - last_interrupt_tick > pdMS_TO_TICKS(25)) { //100 -> 2000 maybe?
+        if (current_tick - last_interrupt_tick > pdMS_TO_TICKS(100)) { //100 -> 2000 maybe?
            if (!laser_tripped)
            {
               lap_triggered(pvParameter);
@@ -111,21 +113,27 @@ void laser_processing_task(void *pvParameter)
 
 
 esp_err_t compose_LoRa_msg(uint8_t * data, uint16_t * len) {
-    int32_t* temp = (int32_t*) data;
-    *(temp) = -1;
+    // "LT": <index>, <min>:<sec>::<ms>
 
-    data[4] = laptimer.lap /256;
-    data[5] = laptimer.lap % 256; 
-    data[6] = laptimer.minutes % 256;
-    data[7] = laptimer.seconds;
-    
+    //TimeStamp Data 
+    uint32_t* timeStamp = (uint32_t*) data; //4 bytes
+    *(timeStamp) = 0; //We aren't using this
+
+    //"Car_Number" 
+    uint32_t* carNum = (timeStamp + 1);  //4 bytes
+    *carNum = -1;
+
+    data[8] = laptimer.lap /256;
+    data[9] = laptimer.lap % 256; 
+    data[10] = laptimer.minutes % 256;
+    data[11] = laptimer.seconds;
+
     int milliSec = laptimer.microSeconds/1000;
-
-    data[8] = milliSec/256;
-    data[9] = milliSec % 256;
+    data[12] = milliSec/256;
+    data[13] = milliSec % 256;
     //8 onward - room for segment times
 
-    *(len) = 10;
+    *(len) = 14;
 
     return ESP_OK;
 }
@@ -136,7 +144,10 @@ void espnow_seg()
         vTaskDelay(pdMS_TO_TICKS(25));
         
         int current_tick = xTaskGetTickCount();
-        // DEBUG: printf("Last Tick: %ld, Current Tick: %d, pdMS_TO_TICKS: %ld\n", last_interrupt_tick, current_tick, pdMS_TO_TICKS(100));
+ 
+        // DEBUG: 
+        // printf("Last Tick: %ld, Current Tick: %d, pdMS_TO_TICKS: %ld\n", last_interrupt_tick, current_tick, pdMS_TO_TICKS(100));
+        
         if (current_tick - last_interrupt_tick > pdMS_TO_TICKS(25)) { //100 -> 2000 maybe?
             if(!laser_tripped)
             {
