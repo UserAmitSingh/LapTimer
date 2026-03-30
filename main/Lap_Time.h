@@ -21,37 +21,36 @@
 #include "esp_timer.h"
 #include "esp_sntp.h"
 
+#define LASER_PIN 7
+#define LT_data_len 12
+
 typedef struct timeval lt_timeval;
 
 typedef struct {
     uint64_t microSeconds;
     uint16_t minutes;
-    uint16_t lap;
     uint8_t seconds;
 } timer;
 
-typedef struct {
-    timer laptimer;
-    lt_timeval lastTime;
-    int pin;
-} params;
-
-esp_err_t gpio_set_up (params*);
-
-void start_timer ();
-
-void lap_triggered (void* par);
-
-void espnow_seg();
 
 
+esp_err_t Lap_Time_init(QueueHandle_t lt_espnow_queue);
 
-void IRAM_ATTR gpioHandler(void* );
+//Lap Time handling functions
+void start_timer();
 
-void lap_processing_task (void *pvParameter);
+void lap_triggered();
 
-void laser_processing_task (void *pvParameter);
+void lap_processing_task();
 
-esp_err_t compose_LoRa_msg(uint8_t * data, uint16_t * len); 
+esp_err_t compose_LT_msg(uint8_t * data); 
+
+
+//Laser handling functions
+void IRAM_ATTR laserHandler(void* params);
+
+esp_err_t laser_setup(gpio_num_t pin);
+
+void laser_processing_task (void* pvParameter);
 
 #endif //LAP_TIME_H

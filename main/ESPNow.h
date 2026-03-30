@@ -20,29 +20,15 @@
 
 #define ESP_NOW_ETH_ALEN 6
 #define MAX_MSG_LEN 256
+#define PADDOCK_CHANNEL 11
+#define LT_data_len 12
 
 // Function declarations
-
 /**
  * @brief Initialize ESP-NOW wireless communication
  * @return ESP_OK on success, error code on failure
  */
-int espnow_init();
-
-/**
- * @brief Send a trigger via ESP-NOW to start lap timing
- */
-void ESPNow_Send_Trigger();
-
-/**
- * @brief Setup ESP-NOW for Main Timer
- */
-void Main_Timer_Setup();
-
-/**
- * @brief Setup ESP-NOW for Segment Timer
- */
-void Seg_Timer_Setup();
+int espnow_init(QueueHandle_t lt_espnow_queue);
 
 /**
  * @brief Send ESP-NOW data to a specific peer
@@ -52,6 +38,11 @@ void Seg_Timer_Setup();
  * @return ESP_OK on success, error code on failure
  */
 int espnow_send(const uint8_t *dest_mac, uint8_t* data, size_t length);
+
+/**
+ * @brief Send a trigger via ESP-NOW to start lap timing
+ */
+void send_SegData();
 
 /**
  * @brief Sends data via ESP-NOW to whatever its supposed to send it to whatever ig
